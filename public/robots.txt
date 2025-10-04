@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# 允许搜索引擎抓取所有页面
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /test-wallet-auth.js
+
+# 重要页面
+Allow: /
+Allow: /search
+Allow: /teachers/
+Allow: /crowdsource
+
+# Sitemap 位置
+Sitemap: https://nexteacher.wiki/sitemap.xml
+
+# 爬取延迟（可选）
+Crawl-delay: 1
+
