@@ -1,9 +1,9 @@
-# NexTeacher - Web3 导师评价平台
+# NexTeacher - Web3 Advisor Review Platform
 
 <div align="center">
   <img src="public/nt_logo.png" alt="NexTeacher Logo" width="120" height="120">
   
-  **匿名透明导师信息 Wiki 与评价系统**
+  **Anonymous and Transparent Advisor Information Wiki & Review System**
   
   [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
@@ -12,207 +12,202 @@
   [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 </div>
 
-## 项目概述
+## Project Overview
 
-NexTeacher 是一个基于 Web3 技术的导师信息汇总与评价平台，旨在为学生提供真实、透明的导师评价信息，帮助研究生和博士生选择合适的研究导师。平台采用 Solana 签名作为身份验证机制，确保所有交互的高度匿名性和透明度。
+NexTeacher is a Web3-based advisor information aggregation and review platform designed to provide students with authentic and transparent advisor reviews, helping graduate students and PhD candidates choose suitable research advisors. The platform uses Solana signatures as an authentication mechanism to ensure high anonymity and transparency for all interactions.
 
-### 核心特性
+### Core Features
 
-- **🔐 身份验证** - 使用 Solana 钱包签名作为唯一身份标识
-- **🛡️ 防恶意攻击** - 社区投票系统自动识别和过滤恶意内容
-- **📊 透明评价** - 所有评价和导师信息都经过社区验证
-- **🌐 完全开源** - 免费使用，代码完全开源
-- **⚡ 高性能** - 基于 Next.js 15 和 Vercel 无服务器架构
+- **🔐 Authentication** - Uses Solana wallet signatures as unique identity verification
+- **🛡️ Anti-Malicious Attack** - Community voting system automatically identifies and filters malicious content
+- **📊 Transparent Reviews** - All reviews and advisor information are community-verified
+- **🌐 Fully Open Source** - Free to use with completely open-source code
+- **⚡ High Performance** - Built on Next.js 15 and Vercel serverless architecture
 
-## 技术架构
+## Technical Architecture
 
-### 前端技术栈
-- **框架**: Next.js 15 (App Router)
-- **样式**: Tailwind CSS 4
-- **语言**: TypeScript
-- **钱包集成**: Solana Wallet Adapter
+### Frontend Stack
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS 4
+- **Language**: TypeScript
+- **Wallet Integration**: Solana Wallet Adapter
 
-### 后端技术栈
-- **运行时**: Node.js (Vercel Serverless)
-- **数据库**: MongoDB Atlas
-- **身份验证**: Solana 钱包签名验证
-- **加密**: TweetNaCl 签名验证
+### Backend Stack
+- **Runtime**: Node.js (Vercel Serverless)
+- **Database**: MongoDB Atlas
+- **Authentication**: Solana wallet signature verification
+- **Encryption**: TweetNaCl signature verification
 
-### Web3 集成
-- **网络**: Solana 主网
-- **签名算法**: Ed25519
-- **钱包支持**: Phantom, Solflare, Backpack 等主流 Solana 钱包
+### Web3 Integration
+- **Network**: Solana Mainnet
+- **Signature Algorithm**: Ed25519
+- **Wallet Support**: Mainstream Solana wallets including Phantom, Solflare, Backpack
 
-## 核心功能
+## Core Functionality
 
-### 1. 导师信息管理
-- 创建和编辑导师档案
-- 支持教育背景、工作经历、研究领域等信息
-- 自动生成随机邮箱（如未提供）
-- 支持个人主页链接
+### 1. Advisor Information Management
+- Create and edit advisor profiles
+- Support for educational background, work experience, research fields, etc.
+- Auto-generate random email (if not provided)
+- Support for personal homepage links
 
-### 2. 评价系统
-- 匿名评价和评论
-- 多维度评分（教学、科研、指导等）
-- 评价点赞/点踩机制
-- 社区投票验证评价质量
+### 2. Review System
+- Anonymous reviews and comments
+- 1-5 star rating system
+- Review like/dislike mechanism
+- Community voting to verify review quality
 
-### 3. 众包完善
-- 按信息缺失程度排序导师
-- 贡献排行榜
-- 实时统计信息
-- 社区协作完善导师信息
+### 3. Crowdsourcing Enhancement
+- Sort advisors by information completeness
+- Contribution leaderboard
+- Real-time statistics
+- Community collaboration to improve advisor information
 
-### 4. 搜索与筛选
-- 按大学、院系、研究领域筛选
-- 全文搜索功能
-- 分页浏览
-- 快速导航
+### 4. Search and Filtering
+- Filter by university, department, and research field
+- Full-text search functionality
+- Paginated browsing
+- Quick navigation
 
-## 安全机制
+## Security Mechanisms
 
-### 签名验证流程
-1. 用户操作时生成包含时间戳的签名消息
-2. 使用 Solana 钱包对消息进行签名
-3. 服务端验证签名和时间戳有效性
-4. 签名有效期内（5分钟）允许操作
+### Signature Verification Process
+1. Generate a signature message with timestamp when user performs an action
+2. Use Solana wallet to sign the message
+3. Server validates signature and timestamp validity
+4. Allow operations within signature validity period (5 minutes)
 
-### 防恶意攻击
-- 所有内容都需要钱包签名验证
-- 社区投票系统识别低质量内容
-- 时间戳验证防止重放攻击
-- 唯一性约束防止重复操作
+### Anti-Malicious Attack
+- All content requires wallet signature verification
+- Community voting system identifies low-quality content
+- Timestamp verification prevents replay attacks
+- Uniqueness constraints prevent duplicate operations
 
-## 快速开始
+## Quick Start
 
-### 环境要求
+### Requirements
 - Node.js 18+
-- MongoDB 数据库
-- Solana 钱包（Phantom 推荐）
+- MongoDB database
+- Solana wallet (Phantom recommended)
 
-### 安装步骤
+### Installation Steps
 
-1. **克隆项目**
+1. **Clone the project**
 ```bash
 git clone https://github.com/your-username/next-teacher.git
 cd next-teacher
 ```
 
-2. **安装依赖**
+2. **Install dependencies**
 ```bash
 npm install
 ```
 
-3. **配置环境变量**
-创建 `.env.local` 文件：
+3. **Configure environment variables**
+Create a `.env.local` file:
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nexteacher?retryWrites=true&w=majority
 ```
 
-4. **初始化数据库**
+4. **Initialize database**
 ```bash
 npm run seed
 ```
 
-5. **启动开发服务器**
+5. **Start development server**
 ```bash
 npm run dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000) 开始使用。
+Visit [http://localhost:3000](http://localhost:3000) to start using.
 
-## 部署指南
+## Deployment Guide
 
-### Vercel 部署（推荐）
+### Vercel Deployment (Recommended)
 
-1. 推送代码到 GitHub
-2. 在 Vercel 中导入项目
-3. 配置环境变量 `MONGODB_URI`
-4. 自动部署完成
+1. Push code to GitHub
+2. Import project in Vercel
+3. Configure `MONGODB_URI` environment variable
+4. Automatic deployment complete
 
-### 其他平台部署
+### Other Platform Deployment
 
-确保平台支持：
+Ensure the platform supports:
 - Node.js 18+
-- MongoDB 连接
-- 环境变量配置
+- MongoDB connection
+- Environment variable configuration
 
-## 开发指南
+## Development Guide
 
-### 项目结构
+### Project Structure
 ```
 next-teacher/
 ├── app/                    # Next.js App Router
-│   ├── api/               # API 路由
-│   ├── teachers/          # 导师页面
-│   ├── crowdsource/       # 众包页面
-│   └── search/           # 搜索页面
-├── components/            # React 组件
-├── lib/                   # 工具库
-│   ├── mongodb.ts         # 数据库连接
-│   └── walletAuth.ts      # 钱包验证
-├── models/                # Mongoose 模型
-├── types/                 # TypeScript 类型
-└── public/                # 静态资源
+│   ├── api/               # API routes
+│   ├── teachers/          # Teacher pages
+│   ├── crowdsource/       # Crowdsource pages
+│   └── search/           # Search pages
+├── components/            # React components
+├── lib/                   # Utility libraries
+│   ├── mongodb.ts         # Database connection
+│   └── walletAuth.ts      # Wallet authentication
+├── models/                # Mongoose models
+├── types/                 # TypeScript types
+└── public/                # Static assets
 ```
 
-### 代码规范
-- 使用 TypeScript 严格模式
-- 遵循 ESLint 规则
-- 使用 Tailwind CSS 工具类
-- 组件采用函数式写法
-- API 路由统一错误处理
+### Code Standards
+- Use TypeScript strict mode
+- Follow ESLint rules
+- Use Tailwind CSS utility classes
+- Components use functional style
+- API routes have unified error handling
 
-### 添加新功能
-1. 在 `types/` 中定义类型
-2. 在 `models/` 中创建 Mongoose 模型
-3. 在 `app/api/` 中创建 API 路由
-4. 在 `components/` 中创建 UI 组件
-5. 在 `app/` 中创建页面
+### Adding New Features
+1. Define types in `types/`
+2. Create Mongoose models in `models/`
+3. Create API routes in `app/api/`
+4. Create UI components in `components/`
+5. Create pages in `app/`
 
-## 路线图
+## Roadmap
 
-### 已完成功能
-- ✅ Solana 钱包集成
-- ✅ 导师信息管理
-- ✅ 评价和评论系统
-- ✅ 社区投票机制
-- ✅ 众包信息完善
-- ✅ 搜索和筛选功能
+### Completed Features
+- ✅ Solana wallet integration
+- ✅ Advisor information management
+- ✅ Review and comment system
+- ✅ Community voting mechanism
+- ✅ Crowdsourced information enhancement
+- ✅ Search and filtering functionality
+- ✅ Wallet behavior browser
 
-### 开发中功能
-- 🔄 完善众包系统
-- 🔄 钱包行为浏览器查询
-- 🔄 社区投票自动删除恶意数据
+### Planned Features
+- 📋 Advanced data analytics
+- 📋 Mobile application
+- 📋 Multi-language support
 
-### 计划功能
-- 📋 代币经济系统
-- 📋 高级数据分析
-- 📋 移动端应用
-- 📋 多语言支持
+## Contributing
 
-## 贡献指南
+We welcome community contributions! Please follow these steps:
 
-我们欢迎社区贡献！请遵循以下步骤：
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Create a Pull Request
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+## License
 
-## 许可证
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+## Contact
 
-## 联系方式
-
-- 项目地址: [https://nexteacher.wiki](https://nexteacher.wiki)
-- 问题反馈: [GitHub Issues](https://github.com/nexteacher/next-teacher/issues)
-- 讨论交流: [GitHub Discussions](https://github.com/nexteacher/next-teacher/discussions)
+- Project URL: [https://nexteacher.wiki](https://nexteacher.wiki)
+- Issue Tracker: [GitHub Issues](https://github.com/nexteacher/next-teacher/issues)
+- Discussions: [GitHub Discussions](https://github.com/nexteacher/next-teacher/discussions)
 
 ---
 
 <div align="center">
-  <p>本项目由生成式 AI 生成</p>
+  <p>This project was generated by Generative AI</p>
 </div>
