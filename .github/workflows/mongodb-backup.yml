@@ -1,64 +1,78 @@
-name: MongoDB 数据库备份
+name: MongoDB Database Backup
 
 on:
   schedule:
-    # 每天 UTC 时间 00:00 运行（北京时间 08:00）
-    # 如果需要北京时间零点，使用 16:00 UTC（北京时间-8小时）
+    # Run daily at UTC 16:00 (Beijing Time 00:00)
+    # Beijing Time is UTC+8
     - cron: '0 16 * * *'
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 获取当前日期
+      - name: Get current date
         id: date
         run: |
           echo "date=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
           echo "datetime=$(TZ='Asia/Shanghai' date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
 
-      - name: 安装 MongoDB 数据库工具
+      - name: Install MongoDB Database Tools
         run: |
           wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
           tar -zxvf mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
           sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.4/bin/* /usr/local/bin/
           mongodump --version
 
-      - name: 执行数据库备份
+      - name: Verify MongoDB URI configuration
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
         run: |
-          mongodump --uri="$MONGODB_URI" --out="nexteacher"
+          if [ -z "$MONGODB_URI" ]; then
+            echo "❌ Error: MONGODB_URI is not set"
+            echo "Please add MONGODB_URI in GitHub Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          # Show only the prefix to confirm the secret is configured without exposing it
+          echo "✅ MONGODB_URI is configured (prefix: ${MONGODB_URI:0:20}...)"
 
-      - name: 压缩备份文件
+      - name: Execute database backup
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          echo "Starting database backup..."
+          mongodump --uri="$MONGODB_URI" --out="nexteacher"
+          echo "Backup completed!"
+
+      - name: Compress backup files
         run: |
           tar -czf nexteacher-backup-${{ steps.date.outputs.date }}.tar.gz nexteacher/
           ls -lh nexteacher-backup-${{ steps.date.outputs.date }}.tar.gz
 
-      - name: 创建 Release 并上传备份
+      - name: Create Release and upload backup
         uses: softprops/action-gh-release@v1
         with:
           tag_name: backup-${{ steps.date.outputs.date }}
-          name: 数据库备份 ${{ steps.date.outputs.date }}
+          name: Database Backup ${{ steps.date.outputs.date }}
           body: |
-            📦 MongoDB 数据库自动备份
+            📦 MongoDB Automatic Database Backup
             
-            **备份时间**: ${{ steps.date.outputs.datetime }} (北京时间)
-            **备份内容**: 完整数据库导出
+            **Backup Time**: ${{ steps.date.outputs.datetime }} (Beijing Time)
+            **Backup Content**: Complete database export
             
-            ### 如何恢复
+            ### How to Restore
             ```bash
-            # 下载备份文件
+            # Download backup file
             wget https://github.com/${{ github.repository }}/releases/download/backup-${{ steps.date.outputs.date }}/nexteacher-backup-${{ steps.date.outputs.date }}.tar.gz
             
-            # 解压
+            # Extract
             tar -xzf nexteacher-backup-${{ steps.date.outputs.date }}.tar.gz
             
-            # 恢复到 MongoDB
+            # Restore to MongoDB
             mongorestore --uri="YOUR_MONGODB_URI" nexteacher/
             ```
           files: |
@@ -68,7 +82,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 清理旧的 Releases (保留最近 30 天)
+      - name: Clean up old releases (keep last 30 days)
         uses: dev-drprasad/delete-older-releases@v0.3.2
         with:
           keep_latest: 30
