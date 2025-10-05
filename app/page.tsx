@@ -336,8 +336,8 @@ export default function Home() {
       )}
       
       {/* 主内容区 */}
-      <main className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
+        <div className="mb-6 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between">
           <div className="text-sm text-gray-500">
             当前地区：<span className="font-medium text-gray-900">{currentRegion.name}</span>
             {structure.length > 0 && (
@@ -345,16 +345,16 @@ export default function Home() {
                 <span className="ml-2 text-gray-400">
                   ({structure.reduce((sum, uni) => sum + uni.departments.reduce((dsum, dept) => dsum + dept.teacherCount, 0), 0)} 位教师)
                 </span>
-                <span className="ml-2 text-gray-400">
+                <span className="hidden sm:inline ml-2 text-gray-400">
                   · 已加载 {structure.length}/{totalUniversities} 所学校
                 </span>
               </>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
             <RegionSelector />
             <button
-              className="bg-black text-white rounded-md px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors"
+              className="bg-black text-white rounded-md px-3 md:px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors whitespace-nowrap"
               disabled={!connected}
               onClick={() => setCreating(true)}
             >
@@ -411,19 +411,19 @@ export default function Home() {
                             {isLoadingDept ? (
                               <div className="text-sm text-gray-400">加载中...</div>
                             ) : (
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-3">
                                 {teachers.map(teacher => (
                                   <Link
                                     key={teacher._id}
                                     href={`/teachers/${teacher._id}`}
                                     className="group"
                                   >
-                                    <div className="flex items-baseline space-x-2">
-                                      <span className="text-gray-900 hover:text-black transition-colors">
+                                    <div className="flex items-baseline space-x-2 flex-wrap">
+                                      <span className="text-gray-900 hover:text-black transition-colors break-words">
                                         {teacher.name}
                                       </span>
                                       {teacher.title && (
-                                        <span className="text-xs text-gray-400 group-hover:text-gray-500">
+                                        <span className="text-xs text-gray-400 group-hover:text-gray-500 whitespace-nowrap">
                                           {teacher.title}
                                         </span>
                                       )}
@@ -461,12 +461,12 @@ export default function Home() {
 
       {/* 创建导师对话框 */}
       {creating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg w-full max-w-lg p-6 shadow-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-lg w-full max-w-lg p-4 md:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">创建新导师</h2>
               <button 
-                className="text-gray-500 hover:text-gray-700" 
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none" 
                 onClick={() => {
                   setCreating(false);
                   setCreateStatus('idle');

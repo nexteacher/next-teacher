@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
       { _id: 1, name: 1, title: 1, university: 1, department: 1, region: 1 }
     )
       .sort({ university: 1, department: 1, name: 1 })
+      .collation({ locale: 'zh', strength: 2 }) // 使用中文拼音排序
       .limit(limit)
       .lean();
 

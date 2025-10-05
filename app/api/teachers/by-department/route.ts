@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
       }
     )
     .sort({ name: 1 })
+    .collation({ locale: 'zh', strength: 2 }) // 使用中文拼音排序
     .lean();
 
     return NextResponse.json({

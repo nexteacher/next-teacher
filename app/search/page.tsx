@@ -48,38 +48,40 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
         <h1 className="text-xl font-medium text-black mb-6">搜索导师</h1>
 
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mb-6">
-          <div className="md:col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">关键词（姓名/学校/院系）</label>
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="如：张三 / 清华大学 / 计算机"
-              className="w-full h-10 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30 text-sm"
-            />
+        <form onSubmit={handleSearch} className="space-y-3 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="md:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">关键词（姓名/学校/院系）</label>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="如：张三 / 清华大学 / 计算机"
+                className="w-full h-10 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">学校</label>
+              <input
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                placeholder="学校名"
+                className="w-full h-10 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">院系</label>
+              <input
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                placeholder="院系名"
+                className="w-full h-10 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30 text-sm"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">学校</label>
-            <input
-              value={university}
-              onChange={(e) => setUniversity(e.target.value)}
-              placeholder="学校名"
-              className="w-full h-10 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">院系</label>
-            <input
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              placeholder="院系名"
-              className="w-full h-10 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30 text-sm"
-            />
-          </div>
-          <div className="md:col-span-4 flex gap-3">
+          <div className="flex gap-3">
             <button
               type="submit"
               disabled={!canSearch || loading}
@@ -105,14 +107,14 @@ export default function SearchPage() {
         {results.length > 0 ? (
           <div>
             <div className="text-xs text-gray-500 mb-3">共 {results.length} 条结果</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {results.map(t => (
-                <Link key={t._id} href={`/teachers/${t._id}`} className="group block border border-gray-200 rounded p-4 hover:border-black transition-colors">
-                  <div className="flex items-baseline justify-between">
-                    <div className="text-gray-900 group-hover:text-black font-medium">{t.name}</div>
-                    {t.title && <div className="text-xs text-gray-400 group-hover:text-gray-500">{t.title}</div>}
+                <Link key={t._id} href={`/teachers/${t._id}`} className="group block border border-gray-200 rounded p-3 md:p-4 hover:border-black transition-colors">
+                  <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                    <div className="text-gray-900 group-hover:text-black font-medium break-words">{t.name}</div>
+                    {t.title && <div className="text-xs text-gray-400 group-hover:text-gray-500 whitespace-nowrap">{t.title}</div>}
                   </div>
-                  <div className="mt-1 text-sm text-gray-600">
+                  <div className="mt-1 text-sm text-gray-600 break-words">
                     <span>{t.university}</span>
                     {t.department && <span className="ml-2 text-gray-400">{t.department}</span>}
                   </div>

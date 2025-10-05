@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         }
       },
       { $sort: { _id: 1 } }
-    ]);
+    ]).collation({ locale: 'zh', strength: 2 }); // 使用中文拼音排序
 
     const totalUniversities = allUniversities.length;
     const hasMore = skip + limit < totalUniversities;
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
       },
       // 排序学校
       { $sort: { university: 1 } }
-    ]);
+    ]).collation({ locale: 'zh', strength: 2 }); // 使用中文拼音排序
 
     return NextResponse.json({
       success: true,

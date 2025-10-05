@@ -142,9 +142,9 @@ export default function CrowdsourcePage() {
 
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">人人为我，我为人人</h1>
+        <h1 className="text-xl md:text-2xl font-bold">人人为我，我为人人</h1>
         <p className="text-gray-600 text-sm mt-1">众包完善所有导师信息，按信息缺失程度排序，缺失信息越多的导师排在越前面。</p>
       </div>
 
@@ -265,14 +265,14 @@ export default function CrowdsourcePage() {
       {/* 分页 */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex flex-col items-center gap-3 mt-6">
-          <div className="flex items-center flex-wrap justify-center gap-2">
+          <div className="flex items-center flex-wrap justify-center gap-1 md:gap-2">
             <button
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-2 md:px-3 py-1 border rounded disabled:opacity-50 text-sm"
               disabled={pagination.page === 1}
               onClick={() => setPage(1)}
             >首页</button>
             <button
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-2 md:px-3 py-1 border rounded disabled:opacity-50 text-sm"
               disabled={!pagination.hasPrevPage}
               onClick={() => setPage(p => Math.max(1, p - 1))}
             >上一页</button>
@@ -281,28 +281,28 @@ export default function CrowdsourcePage() {
               typeof it === 'number' ? (
                 <button
                   key={`p-${it}`}
-                  className={`px-3 py-1 border rounded ${it === pagination.page ? 'bg-black text-white border-black' : 'hover:bg-gray-50'}`}
+                  className={`px-2 md:px-3 py-1 border rounded text-sm ${it === pagination.page ? 'bg-black text-white border-black' : 'hover:bg-gray-50'}`}
                   onClick={() => setPage(it)}
                 >{it}</button>
               ) : (
-                <span key={`e-${idx}`} className="px-2 text-gray-400">{it}</span>
+                <span key={`e-${idx}`} className="px-1 md:px-2 text-gray-400">{it}</span>
               )
             ))}
 
             <button
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-2 md:px-3 py-1 border rounded disabled:opacity-50 text-sm"
               disabled={!pagination.hasNextPage}
               onClick={() => setPage(p => p + 1)}
             >下一页</button>
             <button
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-2 md:px-3 py-1 border rounded disabled:opacity-50 text-sm"
               disabled={pagination.page === pagination.totalPages}
               onClick={() => setPage(pagination.totalPages)}
             >末页</button>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>第 {pagination.page} / {pagination.totalPages} 页</span>
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-gray-600">
+            <span className="whitespace-nowrap">第 {pagination.page} / {pagination.totalPages} 页</span>
             <form
               className="flex items-center gap-2"
               onSubmit={(e) => {
@@ -321,11 +321,11 @@ export default function CrowdsourcePage() {
                 value={jumpPage}
                 onChange={(e) => setJumpPage(e.target.value)}
                 placeholder="页码"
-                className="w-20 border border-gray-300 rounded px-2 py-1 text-sm"
+                className="w-16 md:w-20 border border-gray-300 rounded px-2 py-1 text-sm"
               />
               <button
                 type="submit"
-                className="px-3 py-1 border rounded hover:bg-gray-50"
+                className="px-3 py-1 border rounded hover:bg-gray-50 text-sm whitespace-nowrap"
               >跳转</button>
             </form>
           </div>
