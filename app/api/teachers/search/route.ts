@@ -4,6 +4,7 @@ import TeacherModel from '@/models/Teacher';
 import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0; // 禁用缓存，因为响应依赖于用户的 region cookie
 
 function escapeRegex(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -57,6 +58,12 @@ export async function GET(request: NextRequest) {
       success: true, 
       data: results,
       region // 返回当前地区
+    }, {
+      headers: {
+        // 使用 private 缓存，因为响应依赖于用户的 cookie
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+        'Vary': 'Cookie'
+      }
     });
   } catch (error) {
     console.error('搜索失败:', error);

@@ -3,11 +3,9 @@ import connectDB from '@/lib/mongodb';
 import TeacherModel from '@/models/Teacher';
 import { cookies } from 'next/headers';
 
-// 强制动态渲染
+// 强制动态渲染，禁用缓存
 export const dynamic = 'force-dynamic';
-
-// 缓存配置
-export const revalidate = 300; // 5分钟缓存
+export const revalidate = 0; // 禁用缓存，因为响应依赖于用户的 region cookie
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,7 +50,9 @@ export async function GET(request: NextRequest) {
       data: teachers
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+        // 使用 private 缓存，因为响应依赖于用户的 cookie
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+        'Vary': 'Cookie'
       }
     });
 
