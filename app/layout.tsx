@@ -107,7 +107,6 @@ export default function RootLayout({
               url: 'https://nexteacher.wiki',
               logo: 'https://nexteacher.wiki/nt_logo.png',
               sameAs: [
-                // 在此处添加社交媒体主页链接（如有）
               ],
             }),
           }}
