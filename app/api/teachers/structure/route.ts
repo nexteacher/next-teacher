@@ -12,13 +12,16 @@ export const revalidate = 300; // 5分钟缓存
 export async function GET() {
   try {
     await connectDB();
+    
     // 读取地区，默认 CN（中国大陆）
     const cookieStore = await cookies();
     const region = cookieStore.get('region')?.value || 'CN';
     
-    // 使用聚合管道获取学校和院系结构
-    const matchStage: Record<string, unknown> = { isActive: { $ne: false } };
-    // 如未来 Teacher 加入 region 字段，这里可追加 { region }
+    // 使用聚合管道获取学校和院系结构，按地区过滤
+    const matchStage: Record<string, unknown> = { 
+      isActive: { $ne: false },
+      region: region // 添加地区过滤
+    }
 
     const structure = await TeacherModel.aggregate([
       // 只查询活跃的教师
@@ -65,7 +68,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: structure,
-      region
+      region // 返回当前选中的地区
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'

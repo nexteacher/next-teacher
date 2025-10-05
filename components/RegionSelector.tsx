@@ -1,79 +1,74 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-interface RegionItem {
-  code: string;
-  name: string;
-}
+// 地区列表（硬编码）
+const REGIONS = [
+  { code: 'CN', name: '中国大陆' },
+  { code: 'HK', name: '中国香港' },
+  { code: 'TW', name: '中国台湾' },
+  { code: 'MO', name: '中国澳门' },
+  { code: 'US', name: '美国' },
+  { code: 'UK', name: '英国' },
+  { code: 'CA', name: '加拿大' },
+  { code: 'AU', name: '澳大利亚' },
+  { code: 'JP', name: '日本' },
+  { code: 'KR', name: '韩国' },
+  { code: 'SG', name: '新加坡' },
+  { code: 'DE', name: '德国' },
+  { code: 'FR', name: '法国' },
+];
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
 }
 
 function setCookie(name: string, value: string, days = 365) {
-  if (typeof document === 'undefined') return;
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
 }
 
 export default function RegionSelector() {
-  const [regions, setRegions] = useState<RegionItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<string>('CN');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const res = await fetch('/api/regions', { cache: 'no-store' });
-        const data = await res.json();
-        const list: RegionItem[] = data?.data || [];
-        setRegions(list);
-        const cookieRegion = getCookie('region') || 'CN';
-        setCurrent(cookieRegion);
-      } catch {
-        setRegions([{ code: 'CN', name: '中国大陆' }]);
-        setCurrent('CN');
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
+    setMounted(true);
+    const savedRegion = getCookie('region') || 'CN';
+    setCurrent(savedRegion);
   }, []);
-
-  // const _label = useMemo(() => {
-  //   const found = regions.find(r => r.code === current);
-  //   return found ? found.name : '中国大陆';
-  // }, [regions, current]);
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setCurrent(value);
     setCookie('region', value);
+    // 重新加载页面以应用新的地区过滤
     window.location.reload();
   };
 
+  // 避免 SSR 水合不匹配
+  if (!mounted) {
+    return <div className="w-[140px] h-[32px] bg-gray-100 rounded animate-pulse" />;
+  }
+
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">地区</span>
-      {loading ? (
-        <div className="w-[120px] h-[32px] bg-gray-100 rounded" />
-      ) : (
-        <select
-          value={current}
-          onChange={onChange}
-          className="h-8 px-2 border border-gray-200 rounded text-sm bg-white hover:border-gray-300"
-          aria-label="选择地区"
-        >
-          {regions.map(r => (
-            <option key={r.code} value={r.code}>{r.name}</option>
-          ))}
-        </select>
-      )}
+      <span className="text-sm text-gray-600 hidden sm:inline">地区</span>
+      <select
+        value={current}
+        onChange={onChange}
+        className="h-8 px-2 border border-gray-200 rounded text-sm bg-white hover:border-gray-300 focus:outline-none focus:border-gray-400 transition-colors"
+        aria-label="选择地区"
+      >
+        {REGIONS.map(r => (
+          <option key={r.code} value={r.code}>{r.name}</option>
+        ))}
+      </select>
     </div>
   );
 }
-
 

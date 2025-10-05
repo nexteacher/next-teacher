@@ -42,6 +42,13 @@ const TeacherSchema = new Schema<Teacher>({
     required: [true, '所属大学是必填项'],
     trim: true
   },
+  region: {
+    type: String,
+    required: true,
+    default: 'CN',
+    trim: true,
+    uppercase: true
+  },
   email: {
     type: String,
     unique: true,

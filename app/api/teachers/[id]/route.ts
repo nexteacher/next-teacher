@@ -107,6 +107,17 @@ export async function PUT(
     // 一般字段（宽松校验）
     maybeSet('title', updateData.title);
     maybeSet('department', updateData.department);
+    
+    // region 字段处理（必须是大写的英文缩写）
+    if (typeof updateData.region === 'string') {
+      const region = updateData.region.trim().toUpperCase();
+      if (region === '') { 
+        setPayload.region = 'CN'; // region 是必填字段，空时设为默认值
+      } else {
+        setPayload.region = region;
+      }
+    }
+    
     // name / university 允许更新（去首尾空格，空字符串则 unset）
     if (typeof updateData.name === 'string') {
       const name = updateData.name.trim();

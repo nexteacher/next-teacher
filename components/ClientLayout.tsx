@@ -92,9 +92,6 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
 
           {/* 右侧控件 */}
           <div className="flex items-center gap-3">
-            {/* <div className="hidden sm:block">
-              <RegionSelector />
-            </div> */}
             {/* GitHub 链接 */}
             {/* <Link
               href="https://github.com/nexteacher/next-teacher"

@@ -5,6 +5,7 @@ export interface Teacher {
   title?: string;                  // 职称 (可选)
   department?: string;             // 所属院系 (可选)
   university: string;              // 所属大学 (必填)
+  region: string;                  // 地区代码 (必填，默认 CN)
   email?: string | null;           // 邮箱 (可选)
   homepage?: string;              // 个人主页 (可选)
   researchAreas?: string[];        // 研究领域 (可选)

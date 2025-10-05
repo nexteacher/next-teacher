@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import TeacherModel from '@/models/Teacher';
+import { cookies } from 'next/headers';
 
 // 强制动态渲染
 export const dynamic = 'force-dynamic';
@@ -24,11 +25,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 查询该院系的所有教师,只返回必要字段
+    // 读取地区，默认 CN（中国大陆）
+    const cookieStore = await cookies();
+    const region = cookieStore.get('region')?.value || 'CN';
+
+    // 查询该院系的所有教师,只返回必要字段，按地区过滤
     const teachers = await TeacherModel.find(
       {
         university,
         department,
+        region, // 添加地区过滤
         isActive: { $ne: false }
       },
       {

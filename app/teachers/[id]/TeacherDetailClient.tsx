@@ -10,6 +10,23 @@ import dynamic from "next/dynamic";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { generateSignatureMessage } from "@/lib/walletAuth";
 
+// 地区代码映射
+const REGION_MAP: { [key: string]: string } = {
+  'CN': '中国大陆',
+  'HK': '中国香港',
+  'TW': '中国台湾',
+  'MO': '中国澳门',
+  'US': '美国',
+  'UK': '英国',
+  'CA': '加拿大',
+  'AU': '澳大利亚',
+  'JP': '日本',
+  'KR': '韩国',
+  'SG': '新加坡',
+  'DE': '德国',
+  'FR': '法国',
+};
+
 interface TeacherDetailClientProps {
   teacher: Teacher;
 }
@@ -379,6 +396,16 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
                       className="w-full px-3 py-2 border border-gray-300 text-center text-sm text-gray-500 focus:outline-none focus:border-black"
                       placeholder="院系"
                     />
+                    <select
+                      name="region"
+                      value={formData.region || 'CN'}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 text-center text-sm text-gray-500 focus:outline-none focus:border-black"
+                    >
+                      {Object.entries(REGION_MAP).map(([code, name]) => (
+                        <option key={code} value={code}>{name}</option>
+                      ))}
+                    </select>
                     <input
                       type="text"
                       name="avatar"
@@ -398,6 +425,11 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
                       {teacher.university}
                     </p>
                     <p className="text-sm text-gray-500">{teacher.department}</p>
+                    {teacher.region && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        📍 {REGION_MAP[teacher.region] || teacher.region}
+                      </p>
+                    )}
                   </>
                 )}
               </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import TeacherModel from '@/models/Teacher';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,14 @@ export async function GET(request: NextRequest) {
     const department = (searchParams.get('department') || '').trim();
     const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10) || 50, 100);
 
-    const filter: Record<string, unknown> = { isActive: true };
+    // 读取地区，默认 CN（中国大陆）
+    const cookieStore = await cookies();
+    const region = cookieStore.get('region')?.value || 'CN';
+
+    const filter: Record<string, unknown> = { 
+      isActive: true,
+      region // 添加地区过滤
+    };
     const or: Array<Record<string, unknown>> = [];
 
     if (q) {
@@ -38,13 +46,17 @@ export async function GET(request: NextRequest) {
     // 只返回必要字段
     const results = await TeacherModel.find(
       filter,
-      { _id: 1, name: 1, title: 1, university: 1, department: 1 }
+      { _id: 1, name: 1, title: 1, university: 1, department: 1, region: 1 }
     )
       .sort({ university: 1, department: 1, name: 1 })
       .limit(limit)
       .lean();
 
-    return NextResponse.json({ success: true, data: results });
+    return NextResponse.json({ 
+      success: true, 
+      data: results,
+      region // 返回当前地区
+    });
   } catch (error) {
     console.error('搜索失败:', error);
     return NextResponse.json({ success: false, error: '搜索失败' }, { status: 500 });

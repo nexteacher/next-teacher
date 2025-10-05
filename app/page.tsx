@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Teacher } from '@/types/teacher';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { generateSignatureMessage } from '@/lib/walletAuth';
+import RegionSelector from '@/components/RegionSelector';
 
 interface DepartmentInfo {
   name: string;
@@ -28,7 +29,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [loadingDepartments, setLoadingDepartments] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [regionName, setRegionName] = useState<string>('中国大陆');
+  const [currentRegion, setCurrentRegion] = useState<{ code: string; name: string }>({ code: 'CN', name: '中国大陆' });
   
   // 创建导师相关状态
   const [creating, setCreating] = useState(false);
@@ -61,19 +62,35 @@ export default function Home() {
   const fetchStructure = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/teachers/structure');
+      const response = await fetch('/api/teachers/structure', {
+        cache: 'no-store' // 禁用缓存，确保获取最新数据
+      });
       const data = await response.json();
 
       if (data.success) {
         setStructure(data.data);
-        // 获取当前地区名称
-        try {
-          const res = await fetch('/api/regions', { cache: 'no-store' });
-          const regionData = await res.json();
-          const code = data.region || 'CN';
-          const found = (regionData?.data || []).find((r: { code: string; name: string }) => r.code === code);
-          setRegionName(found?.name || '中国大陆');
-        } catch {}
+        // 更新当前地区显示
+        if (data.region) {
+          const regionMap: { [key: string]: string } = {
+            'CN': '中国大陆',
+            'HK': '中国香港',
+            'TW': '中国台湾',
+            'MO': '中国澳门',
+            'US': '美国',
+            'UK': '英国',
+            'CA': '加拿大',
+            'AU': '澳大利亚',
+            'JP': '日本',
+            'KR': '韩国',
+            'SG': '新加坡',
+            'DE': '德国',
+            'FR': '法国',
+          };
+          setCurrentRegion({
+            code: data.region,
+            name: regionMap[data.region] || data.region
+          });
+        }
       } else {
         setError('获取数据失败');
       }
@@ -152,6 +169,7 @@ export default function Home() {
     const payload: Record<string, unknown> = {
       name: createForm.name.trim(),
       university: createForm.university.trim(),
+      region: currentRegion.code, // 使用当前选择的地区
       source: 'user',
       isActive: true,
     };
@@ -248,17 +266,39 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* 调试组件 - 开发时使用 */}
+      {process.env.NODE_ENV === 'development' && (
+        <>
+          {/* 动态导入调试组件，避免打包到生产环境 */}
+          {typeof window !== 'undefined' && (
+            <div>
+              {/* RegionDebug 组件会显示在页面右下角 */}
+            </div>
+          )}
+        </>
+      )}
+      
       {/* 主内容区 */}
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-6 flex items-center justify-between">
-          <div className="mb-4 text-sm text-gray-500">当前地区：{regionName}</div>
-          <button
-            className="bg-black text-white rounded-md px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors"
-            disabled={!connected}
-            onClick={() => setCreating(true)}
-          >
-            {connected ? '创建新导师' : '请先连接钱包'}
-          </button>
+          <div className="text-sm text-gray-500">
+            当前地区：<span className="font-medium text-gray-900">{currentRegion.name}</span>
+            {structure.length > 0 && (
+              <span className="ml-2 text-gray-400">
+                ({structure.reduce((sum, uni) => sum + uni.departments.reduce((dsum, dept) => dsum + dept.teacherCount, 0), 0)} 位教师)
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <RegionSelector />
+            <button
+              className="bg-black text-white rounded-md px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors"
+              disabled={!connected}
+              onClick={() => setCreating(true)}
+            >
+              {connected ? '创建新导师' : '请先连接钱包'}
+            </button>
+          </div>
         </div>
         {structure.length === 0 ? (
           <div className="text-center py-16">
@@ -391,6 +431,20 @@ export default function Home() {
                 )}
               </div>
             )}
+            
+            {/* 地区提示 */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 text-sm">📍</span>
+                <div className="text-sm text-blue-700">
+                  <span className="font-medium">创建地区：</span>
+                  <span className="ml-1">{currentRegion.name}</span>
+                  <div className="text-xs text-blue-600 mt-1">
+                    新导师将被创建在当前选择的地区中
+                  </div>
+                </div>
+              </div>
+            </div>
             
             <div className="grid grid-cols-1 gap-4">
               <input

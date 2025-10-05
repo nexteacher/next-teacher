@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Teacher } from '@/types/teacher';
+import RegionSelector from '@/components/RegionSelector';
 
 interface DepartmentInfo {
   name: string;
@@ -29,7 +30,7 @@ export default function Page() {
     const [importing, setImporting] = useState(false);
     const [deleting, setDeleting] = useState<string | null>(null);
     const [message, setMessage] = useState('');
-    const [regionName, setRegionName] = useState<string>('中国大陆');
+    const [currentRegion, setCurrentRegion] = useState<{ code: string; name: string }>({ code: 'CN', name: '中国大陆' });
     
     const isChineseStart = (text: string) => /^[\u4e00-\u9fa5]/.test(text);
     const compareChineseFirst = (a: string, b: string) => {
@@ -58,19 +59,36 @@ export default function Page() {
     const fetchStructure = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/teachers/structure');
+            const response = await fetch('/api/teachers/structure', {
+                cache: 'no-store' // 禁用缓存
+            });
             const result = await response.json();
             
             if (result.success) {
                 setStructure(result.data);
                 setMessage('');
-                try {
-                    const res = await fetch('/api/regions', { cache: 'no-store' });
-                    const regionData = await res.json();
-                    const code = result.region || 'CN';
-                    const found = (regionData?.data || []).find((r: { code: string; name: string }) => r.code === code);
-                    setRegionName(found?.name || '中国大陆');
-                } catch {}
+                // 更新当前地区显示
+                if (result.region) {
+                    const regionMap: { [key: string]: string } = {
+                        'CN': '中国大陆',
+                        'HK': '中国香港',
+                        'TW': '中国台湾',
+                        'MO': '中国澳门',
+                        'US': '美国',
+                        'UK': '英国',
+                        'CA': '加拿大',
+                        'AU': '澳大利亚',
+                        'JP': '日本',
+                        'KR': '韩国',
+                        'SG': '新加坡',
+                        'DE': '德国',
+                        'FR': '法国',
+                    };
+                    setCurrentRegion({
+                        code: result.region,
+                        name: regionMap[result.region] || result.region
+                    });
+                }
             } else {
                 setMessage('获取数据失败: ' + result.message);
             }
@@ -364,7 +382,17 @@ export default function Page() {
 
             {/* 主内容区 */}
             <main className="max-w-6xl mx-auto px-6 py-12">
-                <div className="mb-4 text-sm text-gray-500">当前地区：{regionName}</div>
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                        当前地区：<span className="font-medium text-gray-900">{currentRegion.name}</span>
+                        {structure.length > 0 && (
+                            <span className="ml-2 text-gray-400">
+                                ({structure.reduce((sum, uni) => sum + uni.departments.reduce((dsum, dept) => dsum + dept.teacherCount, 0), 0)} 位教师)
+                            </span>
+                        )}
+                    </div>
+                    <RegionSelector />
+                </div>
                 {structure.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-gray-400">暂无数据，请先初始化数据库或导入数据</p>
