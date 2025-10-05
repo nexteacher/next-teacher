@@ -37,7 +37,7 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
         <div className="animate-scroll-banner py-2 text-sm font-medium">
           <div className="flex">
             {
-              Array.from({ length: 20 }).map((_, index) => (
+              Array.from({ length: 40 }).map((_, index) => (
                 <span key={index} className="inline-block mr-8 whitespace-nowrap">导师 Wiki</span>
               ))
             }

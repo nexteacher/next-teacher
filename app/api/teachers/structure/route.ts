@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import TeacherModel from '@/models/Teacher';
 import { cookies } from 'next/headers';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 // 缓存配置
 export const revalidate = 300; // 5分钟缓存
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
     
@@ -17,15 +17,44 @@ export async function GET() {
     const cookieStore = await cookies();
     const region = cookieStore.get('region')?.value || 'CN';
     
+    // 获取分页参数
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+    
     // 使用聚合管道获取学校和院系结构，按地区过滤
     const matchStage: Record<string, unknown> = { 
       isActive: { $ne: false },
       region: region // 添加地区过滤
     }
 
-    const structure = await TeacherModel.aggregate([
-      // 只查询活跃的教师
+    // 先获取所有学校（用于分页）
+    const allUniversities = await TeacherModel.aggregate([
       { $match: matchStage },
+      {
+        $group: {
+          _id: { $ifNull: ['$university', '未知学校'] }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const totalUniversities = allUniversities.length;
+    const hasMore = skip + limit < totalUniversities;
+    
+    // 获取当前页的学校列表
+    const pagedUniversities = allUniversities.slice(skip, skip + limit).map(u => u._id);
+
+    // 获取这些学校的详细结构
+    const structure = await TeacherModel.aggregate([
+      // 只查询活跃的教师和当前页的学校
+      { 
+        $match: { 
+          ...matchStage,
+          university: { $in: pagedUniversities }
+        } 
+      },
       // 按学校和院系分组
       {
         $group: {
@@ -68,7 +97,13 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: structure,
-      region // 返回当前选中的地区
+      region, // 返回当前选中的地区
+      pagination: {
+        page,
+        limit,
+        total: totalUniversities,
+        hasMore
+      }
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'

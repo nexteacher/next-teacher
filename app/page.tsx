@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Teacher } from '@/types/teacher';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -27,9 +27,13 @@ export default function Home() {
   const [loadedTeachers, setLoadedTeachers] = useState<LoadedTeachers>({});
   const [expandedDepartments, setExpandedDepartments] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loadingDepartments, setLoadingDepartments] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [currentRegion, setCurrentRegion] = useState<{ code: string; name: string }>({ code: 'CN', name: '中国大陆' });
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalUniversities, setTotalUniversities] = useState(0);
   
   // 创建导师相关状态
   const [creating, setCreating] = useState(false);
@@ -55,20 +59,39 @@ export default function Home() {
       .replace(/[^a-zA-Z0-9\u4e00-\u9fa5\-]/g, '')
       .toLowerCase();
 
-  useEffect(() => {
-    fetchStructure();
-  }, []);
-
-  const fetchStructure = async () => {
+  // 获取数据
+  const fetchStructure = useCallback(async (pageNum: number) => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/teachers/structure', {
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
+      const response = await fetch(`/api/teachers/structure?page=${pageNum}&limit=5`, {
         cache: 'no-store' // 禁用缓存，确保获取最新数据
       });
       const data = await response.json();
 
       if (data.success) {
-        setStructure(data.data);
+        // 如果是第一页，替换数据；否则追加数据并去重
+        setStructure(prev => {
+          if (pageNum === 1) {
+            return data.data;
+          } else {
+            // 合并数据并去重（基于学校名称）
+            const existingUniversities = new Set(prev.map((item: UniversityStructure) => item.university));
+            const newData = data.data.filter((item: UniversityStructure) => !existingUniversities.has(item.university));
+            return [...prev, ...newData];
+          }
+        });
+        
+        // 更新分页信息
+        if (data.pagination) {
+          setHasMore(data.pagination.hasMore);
+          setTotalUniversities(data.pagination.total);
+        }
+        
         // 更新当前地区显示
         if (data.region) {
           const regionMap: { [key: string]: string } = {
@@ -99,8 +122,42 @@ export default function Home() {
       console.error('Error:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, []);
+
+  const loadMoreUniversities = useCallback(() => {
+    if (!hasMore || loadingMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchStructure(nextPage);
+  }, [hasMore, loadingMore, page, fetchStructure]);
+
+  // 初始加载
+  useEffect(() => {
+    // 重置状态并加载第一页
+    setStructure([]);
+    setPage(1);
+    setHasMore(true);
+    fetchStructure(1);
+  }, [currentRegion.code, fetchStructure]);
+
+  // 滚动加载监听
+  useEffect(() => {
+    const handleScroll = () => {
+      // 检查是否滚动到接近底部（距离底部 200px 时触发）
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+      
+      if (scrollHeight - scrollTop - clientHeight < 200 && !loading && !loadingMore && hasMore) {
+        loadMoreUniversities();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, loadingMore, hasMore, loadMoreUniversities]);
 
   const getDepartmentKey = (university: string, department: string) => {
     return `${university}-${department}`;
@@ -284,9 +341,14 @@ export default function Home() {
           <div className="text-sm text-gray-500">
             当前地区：<span className="font-medium text-gray-900">{currentRegion.name}</span>
             {structure.length > 0 && (
-              <span className="ml-2 text-gray-400">
-                ({structure.reduce((sum, uni) => sum + uni.departments.reduce((dsum, dept) => dsum + dept.teacherCount, 0), 0)} 位教师)
-              </span>
+              <>
+                <span className="ml-2 text-gray-400">
+                  ({structure.reduce((sum, uni) => sum + uni.departments.reduce((dsum, dept) => dsum + dept.teacherCount, 0), 0)} 位教师)
+                </span>
+                <span className="ml-2 text-gray-400">
+                  · 已加载 {structure.length}/{totalUniversities} 所学校
+                </span>
+              </>
             )}
           </div>
           <div className="flex items-center gap-3">
@@ -308,8 +370,8 @@ export default function Home() {
           <div className="space-y-16">
             {[...structure]
               .sort((a, b) => compareChineseFirst(a.university, b.university))
-              .map(({ university, departments }) => (
-              <div key={university} id={getUniversityId(university)}>
+              .map(({ university, departments }, index) => (
+              <div key={`${university}-${index}`} id={getUniversityId(university)}>
                 {/* 学校名称 */}
                 <h2 className="text-xl font-medium text-black mb-8 pb-3 border-b border-gray-300">
                   {university}
@@ -378,6 +440,21 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        
+        {/* 加载更多指示器 */}
+        {loadingMore && (
+          <div className="text-center py-8">
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-gray-500 text-sm">加载更多...</p>
+          </div>
+        )}
+        
+        {/* 已加载完所有数据的提示 */}
+        {!hasMore && structure.length > 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-400 text-sm">已加载全部 {totalUniversities} 所学校</p>
           </div>
         )}
       </main>
@@ -520,7 +597,7 @@ export default function Home() {
       {/* 简洁的页脚 */}
       <footer className="border-t border-gray-200 mt-20">
         <div className="max-w-6xl mx-auto px-6 py-6">
-          <p className="text-xs text-gray-400 text-center">导师评价系统</p>
+          <p className="text-xs text-gray-400 text-center">NexTeacher</p>
         </div>
       </footer>
 
