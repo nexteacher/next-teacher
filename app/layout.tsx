@@ -16,12 +16,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://nexteacher.wiki'),
-  title: "NexTeacher - 导师 Wiki | Web3 导师评价平台",
+  title: {
+    default: "NexTeacher - 导师 Wiki | Web3 导师评价平台",
+    template: "%s | NexTeacher 导师评价网",
+  },
   description: "基于 Web3 的导师信息汇总与评价平台，提供真实的研究生导师、博士导师评价信息，帮助学生选择合适的研究导师。支持区块链签名验证，确保评价真实性。",
   keywords: "导师评价,研究生导师,博士导师,导师推荐,学术导师,Web3,区块链,导师选择,研究生选择,博士选择,导师信息,导师评价系统",
   authors: [{ name: "NexTeacher" }],
   creator: "NexTeacher",
   publisher: "NexTeacher",
+  applicationName: "NexTeacher",
   robots: {
     index: true,
     follow: true,
@@ -33,6 +37,18 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    apple: [
+      { url: "/nt_logo.png" },
+    ],
+    shortcut: [
+      { url: "/favicon.ico" },
+    ],
+  },
+  manifest: "/site.webmanifest",
   openGraph: {
     type: 'website',
     locale: 'zh_CN',
@@ -77,6 +93,43 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
+      <head>
+        {/* Organization JSON-LD */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'NexTeacher',
+              alternateName: '导师评价网',
+              url: 'https://nexteacher.wiki',
+              logo: 'https://nexteacher.wiki/nt_logo.png',
+              sameAs: [
+                // 在此处添加社交媒体主页链接（如有）
+              ],
+            }),
+          }}
+        />
+        {/* WebSite JSON-LD with Sitelinks SearchBox */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'NexTeacher - 导师 Wiki',
+              alternateName: '导师评价网',
+              url: 'https://nexteacher.wiki',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: 'https://nexteacher.wiki/search?q={search_term_string}',
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
