@@ -7,7 +7,7 @@ import { Teacher } from "@/types/teacher";
 import { Comment } from "@/types/comment";
 import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp } from "lucide-react";
 import { generateSignatureMessage } from "@/lib/walletAuth";
 
 // 地区代码映射
@@ -44,6 +44,7 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
   const [reacting, setReacting] = useState<{ [commentId: string]: 'like' | 'dislike' | null }>({});
   const contentLength = content.trim().length;
   const [avatarError, setAvatarError] = useState(false);
+  const [showCollapsedComments, setShowCollapsedComments] = useState(false);
 
   // 编辑相关状态
   const [isEditing, setIsEditing] = useState(false);
@@ -537,293 +538,304 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
           {/* 右侧：详细信息 */}
           <div className="lg:col-span-2 space-y-8 md:space-y-12">
             {/* 研究领域 */}
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xs font-medium text-gray-600 uppercase tracking-wider">研究领域</h2>
-                {isEditing && (
-                  <button
-                    onClick={addStringArrayItem}
-                    className="px-3 py-1 bg-black text-white text-xs hover:bg-gray-800 transition-colors"
-                  >
-                    + 添加
-                  </button>
-                )}
-              </div>
-              {isEditing ? (
-                <div className="space-y-2">
-                  {(formData.researchAreas || []).length === 0 ? (
-                    <p className="text-sm text-gray-400">暂无研究领域，点击添加按钮添加</p>
-                  ) : (
-                    (formData.researchAreas || []).map((area, index) => (
-                      <div key={index} className="flex gap-2 items-center">
-                        <input
-                          type="text"
-                          value={area}
-                          onChange={(e) => handleStringArrayChange(index, e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="研究领域"
-                        />
-                        <button
-                          onClick={() => removeStringArrayItem(index)}
-                          className="px-3 py-2 border border-gray-300 text-gray-900 text-sm hover:bg-gray-50 transition-colors"
-                        >
-                          删除
-                        </button>
-                      </div>
-                    ))
+            {(isEditing || (teacher.researchAreas && teacher.researchAreas.length > 0)) && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xs font-medium text-gray-600 uppercase tracking-wider">研究领域</h2>
+                  {isEditing && (
+                    <button
+                      onClick={addStringArrayItem}
+                      className="px-3 py-1 bg-black text-white text-xs hover:bg-gray-800 transition-colors"
+                    >
+                      + 添加
+                    </button>
                   )}
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {(teacher.researchAreas || []).length === 0 ? (
-                    <p className="text-sm text-gray-400">暂无研究领域</p>
-                  ) : (
-                    (teacher.researchAreas || []).map((area, index) => (
+                {isEditing ? (
+                  <div className="space-y-2">
+                    {(formData.researchAreas || []).length === 0 ? (
+                      <p className="text-sm text-gray-400">暂无研究领域，点击添加按钮添加</p>
+                    ) : (
+                      (formData.researchAreas || []).map((area, index) => (
+                        <div key={index} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={area}
+                            onChange={(e) => handleStringArrayChange(index, e.target.value)}
+                            className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                            placeholder="研究领域"
+                          />
+                          <button
+                            onClick={() => removeStringArrayItem(index)}
+                            className="px-3 py-2 border border-gray-300 text-gray-900 text-sm hover:bg-gray-50 transition-colors"
+                          >
+                            删除
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {(teacher.researchAreas || []).map((area, index) => (
                       <span
                         key={index}
                         className="px-3 py-1 bg-gray-100 text-gray-900 text-sm"
                       >
                         {area}
                       </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* 教育背景 */}
+            {(isEditing || (teacher.education && teacher.education.length > 0)) && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xs font-medium text-gray-600 uppercase tracking-wider">教育背景</h2>
+                  {isEditing && (
+                    <button
+                      onClick={() =>
+                        addArrayItem("education", {
+                          degree: "",
+                          major: "",
+                          university: "",
+                          year: new Date().getFullYear(),
+                        })
+                      }
+                      className="px-3 py-1 bg-black text-white text-xs hover:bg-gray-800 transition-colors"
+                    >
+                      + 添加
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-6">
+                  {(formData.education || []).length === 0 && isEditing ? (
+                    <p className="text-sm text-gray-400">暂无教育背景，点击添加按钮添加</p>
+                  ) : (
+                    (formData.education || []).map((edu, index) => (
+                      <div
+                        key={index}
+                        className="border-l-2 border-gray-300 pl-6 relative"
+                      >
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <input
+                              type="text"
+                              value={edu.degree}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "education",
+                                  index,
+                                  "degree",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="学位"
+                            />
+                            <input
+                              type="text"
+                              value={edu.major}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "education",
+                                  index,
+                                  "major",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="专业"
+                            />
+                            <input
+                              type="text"
+                              value={edu.university}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "education",
+                                  index,
+                                  "university",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="大学"
+                            />
+                            <input
+                              type="number"
+                              value={edu.year}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "education",
+                                  index,
+                                  "year",
+                                  parseInt(e.target.value)
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="年份"
+                            />
+                            <button
+                              onClick={() => removeArrayItem("education", index)}
+                              className="absolute top-0 right-0 text-gray-600 hover:text-black text-sm"
+                            >
+                              删除
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="font-medium text-gray-900">
+                              {edu.degree} · {edu.major}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">{edu.university}</div>
+                            <div className="text-xs text-gray-400 mt-1">{edu.year}年</div>
+                          </>
+                        )}
+                      </div>
                     ))
                   )}
                 </div>
-              )}
-            </div>
-            {/* 教育背景 */}
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xs font-medium text-gray-600 uppercase tracking-wider">教育背景</h2>
-                {isEditing && (
-                  <button
-                    onClick={() =>
-                      addArrayItem("education", {
-                        degree: "",
-                        major: "",
-                        university: "",
-                        year: new Date().getFullYear(),
-                      })
-                    }
-                    className="px-3 py-1 bg-black text-white text-xs hover:bg-gray-800 transition-colors"
-                  >
-                    + 添加
-                  </button>
-                )}
               </div>
-              <div className="space-y-6">
-                {(formData.education || []).map((edu, index) => (
-                  <div
-                    key={index}
-                    className="border-l-2 border-gray-300 pl-6 relative"
-                  >
-                    {isEditing ? (
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          value={edu.degree}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "education",
-                              index,
-                              "degree",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="学位"
-                        />
-                        <input
-                          type="text"
-                          value={edu.major}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "education",
-                              index,
-                              "major",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="专业"
-                        />
-                        <input
-                          type="text"
-                          value={edu.university}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "education",
-                              index,
-                              "university",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="大学"
-                        />
-                        <input
-                          type="number"
-                          value={edu.year}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "education",
-                              index,
-                              "year",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="年份"
-                        />
-                        <button
-                          onClick={() => removeArrayItem("education", index)}
-                          className="absolute top-0 right-0 text-gray-600 hover:text-black text-sm"
-                        >
-                          删除
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="font-medium text-gray-900">
-                          {edu.degree} · {edu.major}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">{edu.university}</div>
-                        <div className="text-xs text-gray-400 mt-1">{edu.year}年</div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* 工作经历 */}
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xs font-medium text-gray-600 uppercase tracking-wider">工作经历</h2>
-                {isEditing && (
-                  <button
-                    onClick={() =>
-                      addArrayItem("experience", {
-                        position: "",
-                        institution: "",
-                        startYear: new Date().getFullYear(),
-                        endYear: undefined,
-                        description: "",
-                      })
-                    }
-                    className="px-3 py-1 bg-black text-white text-xs hover:bg-gray-800 transition-colors"
-                  >
-                    + 添加
-                  </button>
-                )}
-              </div>
-              <div className="space-y-6">
-                {(formData.experience || []).map((exp, index) => (
-                  <div
-                    key={index}
-                    className="border-l-2 border-gray-300 pl-6 relative"
-                  >
-                    {isEditing ? (
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          value={exp.position}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "experience",
-                              index,
-                              "position",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="职位"
-                        />
-                        <input
-                          type="text"
-                          value={exp.institution}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "experience",
-                              index,
-                              "institution",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="机构"
-                        />
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            value={exp.startYear}
-                            onChange={(e) =>
-                              handleArrayInputChange(
-                                "experience",
-                                index,
-                                "startYear",
-                                parseInt(e.target.value)
-                              )
-                            }
-                            className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                            placeholder="开始年份"
-                          />
-                          <input
-                            type="number"
-                            value={exp.endYear || ""}
-                            onChange={(e) =>
-                              handleArrayInputChange(
-                                "experience",
-                                index,
-                                "endYear",
-                                e.target.value ? parseInt(e.target.value) : undefined
-                              )
-                            }
-                            className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                            placeholder="结束年份（可选）"
-                          />
-                        </div>
-                        <textarea
-                          value={exp.description || ""}
-                          onChange={(e) =>
-                            handleArrayInputChange(
-                              "experience",
-                              index,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                          placeholder="工作描述（可选）"
-                          rows={2}
-                        />
-                        <button
-                          onClick={() => removeArrayItem("experience", index)}
-                          className="absolute top-0 right-0 text-gray-600 hover:text-black text-sm"
-                        >
-                          删除
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="font-medium text-gray-900">
-                          {exp.position}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">{exp.institution}</div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          {exp.startYear}年 -{" "}
-                          {exp.endYear ? `${exp.endYear}年` : "至今"}
-                        </div>
-                        {exp.description && (
-                          <div className="text-sm text-gray-700 mt-2">
-                            {exp.description}
+            {(isEditing || (teacher.experience && teacher.experience.length > 0)) && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xs font-medium text-gray-600 uppercase tracking-wider">工作经历</h2>
+                  {isEditing && (
+                    <button
+                      onClick={() =>
+                        addArrayItem("experience", {
+                          position: "",
+                          institution: "",
+                          startYear: new Date().getFullYear(),
+                          endYear: undefined,
+                          description: "",
+                        })
+                      }
+                      className="px-3 py-1 bg-black text-white text-xs hover:bg-gray-800 transition-colors"
+                    >
+                      + 添加
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-6">
+                  {(formData.experience || []).length === 0 && isEditing ? (
+                    <p className="text-sm text-gray-400">暂无工作经历，点击添加按钮添加</p>
+                  ) : (
+                    (formData.experience || []).map((exp, index) => (
+                      <div
+                        key={index}
+                        className="border-l-2 border-gray-300 pl-6 relative"
+                      >
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <input
+                              type="text"
+                              value={exp.position}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "experience",
+                                  index,
+                                  "position",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="职位"
+                            />
+                            <input
+                              type="text"
+                              value={exp.institution}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "experience",
+                                  index,
+                                  "institution",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="机构"
+                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                value={exp.startYear}
+                                onChange={(e) =>
+                                  handleArrayInputChange(
+                                    "experience",
+                                    index,
+                                    "startYear",
+                                    parseInt(e.target.value)
+                                  )
+                                }
+                                className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                                placeholder="开始年份"
+                              />
+                              <input
+                                type="number"
+                                value={exp.endYear || ""}
+                                onChange={(e) =>
+                                  handleArrayInputChange(
+                                    "experience",
+                                    index,
+                                    "endYear",
+                                    e.target.value ? parseInt(e.target.value) : undefined
+                                  )
+                                }
+                                className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                                placeholder="结束年份（可选）"
+                              />
+                            </div>
+                            <textarea
+                              value={exp.description || ""}
+                              onChange={(e) =>
+                                handleArrayInputChange(
+                                  "experience",
+                                  index,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                              placeholder="工作描述（可选）"
+                              rows={2}
+                            />
+                            <button
+                              onClick={() => removeArrayItem("experience", index)}
+                              className="absolute top-0 right-0 text-gray-600 hover:text-black text-sm"
+                            >
+                              删除
+                            </button>
                           </div>
+                        ) : (
+                          <>
+                            <div className="font-medium text-gray-900">
+                              {exp.position}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">{exp.institution}</div>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {exp.startYear}年 -{" "}
+                              {exp.endYear ? `${exp.endYear}年` : "至今"}
+                            </div>
+                            {exp.description && (
+                              <div className="text-sm text-gray-700 mt-2">
+                                {exp.description}
+                              </div>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                  </div>
-                ))}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 评论列表 */}
             <div>
@@ -833,8 +845,41 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
               ) : comments.length === 0 ? (
                 <div className="text-sm text-gray-500">还没有评论，快来写第一条吧。</div>
               ) : (
-                <div className="space-y-6">
-                  {comments.map((c: Comment) => {
+                (() => {
+                  // 将评论分为正常评论和需要折叠的评论
+                  const normalComments = comments.filter((c: Comment) => {
+                    const likeCount = c.likeCount ?? (c.likedBy?.length ?? 0);
+                    const dislikeCount = c.dislikeCount ?? (c.dislikedBy?.length ?? 0);
+                    return likeCount >= dislikeCount;
+                  });
+                  
+                  const collapsedComments = comments.filter((c: Comment) => {
+                    const likeCount = c.likeCount ?? (c.likedBy?.length ?? 0);
+                    const dislikeCount = c.dislikeCount ?? (c.dislikedBy?.length ?? 0);
+                    return dislikeCount > likeCount;
+                  });
+
+                  // 渲染单个评论的函数
+                  const renderComment = (c: Comment, isCollapsed: boolean = false) => {
+                    // 如果是折叠的评论，只显示简略信息
+                    if (isCollapsed) {
+                      return (
+                        <div key={c._id} className="border border-gray-200 p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 font-mono">ID: {c._id.slice(-8)}</span>
+                            <span className="text-xs text-gray-400">评分 {c.rating}/5</span>
+                          </div>
+                          <Link 
+                            href={`/comments/${c._id}`}
+                            className="text-sm text-gray-900 hover:text-black transition-colors font-medium"
+                          >
+                            查看详情 →
+                          </Link>
+                        </div>
+                      );
+                    }
+
+                    // 正常评论显示完整内容
                     const lowered = walletAddress.toLowerCase();
                     const userReaction = !walletAddress ? null : (
                       c.likedBy?.some(addr => addr === lowered) ? 'like'
@@ -944,8 +989,40 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
                         </div>
                       </div>
                     );
-                  })}
-                </div>
+                  };
+
+                  return (
+                    <div className="space-y-6">
+                      {/* 正常评论 */}
+                      {normalComments.map(c => renderComment(c, false))}
+                      
+                      {/* 折叠的评论区域 */}
+                      {collapsedComments.length > 0 && (
+                        <div className="border border-gray-300 bg-gray-50">
+                          <button
+                            onClick={() => setShowCollapsedComments(!showCollapsedComments)}
+                            className="w-full px-4 py-3 flex items-center justify-between text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <span>
+                              {showCollapsedComments ? '收起' : '展开'}没有价值的评论 ({collapsedComments.length} 条)
+                            </span>
+                            {showCollapsedComments ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </button>
+                          
+                          {showCollapsedComments && (
+                            <div className="px-4 pb-4 space-y-4">
+                              {collapsedComments.map(c => renderComment(c, true))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
               )}
             </div>
 
