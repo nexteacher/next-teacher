@@ -213,13 +213,57 @@ export async function PUT(
     if (Object.keys(setPayload).length > 0) update.$set = setPayload;
     if (Object.keys(unsetPayload).length > 0) update.$unset = unsetPayload;
 
+    // 获取原有数据以便对比修改的字段
+    const originalTeacher = await TeacherModel.findById(id).select('-__v').lean();
+    if (!originalTeacher) {
+      return NextResponse.json({ success: false, error: '导师不存在' }, { status: 404 });
+    }
+
     // 若没有任何可更新内容，直接返回当前数据
     if (!update.$set && !update.$unset) {
-      const current = await TeacherModel.findById(id).select('-__v');
-      if (!current) {
-        return NextResponse.json({ success: false, error: '导师不存在' }, { status: 404 });
+      return NextResponse.json({ success: true, data: originalTeacher });
+    }
+
+    // 对比原有数据，只记录真正改变的字段
+    const actuallyUpdatedFields: string[] = [];
+    const actuallyRemovedFields: string[] = [];
+
+    // 检查 setPayload 中真正改变的字段
+    if (update.$set) {
+      for (const [key, newValue] of Object.entries(setPayload)) {
+        const oldValue = (originalTeacher as Record<string, unknown>)[key];
+        // 深度对比数组和对象
+        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+          actuallyUpdatedFields.push(key);
+        }
       }
-      return NextResponse.json({ success: true, data: current });
+    }
+
+    // 检查 unsetPayload 中真正存在且有内容的字段
+    if (update.$unset) {
+      for (const key of Object.keys(unsetPayload)) {
+        const oldValue = (originalTeacher as Record<string, unknown>)[key];
+        // 只有原值存在且有实际内容时，才算是真正的"移除"
+        if (oldValue !== undefined && oldValue !== null) {
+          // 字符串：非空才算有内容
+          if (typeof oldValue === 'string' && oldValue.trim() !== '') {
+            actuallyRemovedFields.push(key);
+          }
+          // 数组：非空才算有内容
+          else if (Array.isArray(oldValue) && oldValue.length > 0) {
+            actuallyRemovedFields.push(key);
+          }
+          // 其他类型（对象、布尔、数字等）：只要存在就算有内容
+          else if (typeof oldValue !== 'string' && !Array.isArray(oldValue)) {
+            actuallyRemovedFields.push(key);
+          }
+        }
+      }
+    }
+
+    // 如果没有真正的修改，直接返回原数据
+    if (actuallyUpdatedFields.length === 0 && actuallyRemovedFields.length === 0) {
+      return NextResponse.json({ success: true, data: originalTeacher });
     }
 
     const teacher = await TeacherModel.findByIdAndUpdate(id, update, { new: true, runValidators: true }).select('-__v');
@@ -234,7 +278,7 @@ export async function PUT(
       );
     }
 
-    // 记录众包行为 - 使用 findOneAndUpdate 避免重复记录
+    // 记录众包行为 - 只记录真正改变的字段
     try {
       await CrowdActionModel.findOneAndUpdate(
         {
@@ -249,8 +293,8 @@ export async function PUT(
           targetType: 'teacher',
           targetId: id,
           payload: {
-            updatedFields: Object.keys(setPayload),
-            removedFields: Object.keys(unsetPayload)
+            updatedFields: actuallyUpdatedFields,
+            removedFields: actuallyRemovedFields
           }
         },
         { upsert: true, new: true }
