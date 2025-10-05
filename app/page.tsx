@@ -337,7 +337,9 @@ export default function Home() {
       
       {/* 主内容区 */}
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
-        <div className="mb-6 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between">
+        {/* 头部信息和操作区 - 优化移动端布局 */}
+        <div className="mb-6 space-y-3">
+          {/* 地区信息 */}
           <div className="text-sm text-gray-500">
             当前地区：<span className="font-medium text-gray-900">{currentRegion.name}</span>
             {structure.length > 0 && (
@@ -351,14 +353,16 @@ export default function Home() {
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+          
+          {/* 操作按钮组 - 移动端全宽布局，桌面端并排 */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <RegionSelector />
             <button
-              className="bg-black text-white rounded-md px-3 md:px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors whitespace-nowrap"
+              className="bg-black text-white rounded-md px-4 py-2.5 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors whitespace-nowrap w-full sm:w-auto"
               disabled={!connected}
               onClick={() => setCreating(true)}
             >
-              {connected ? '创建新导师' : '请先连接钱包'}
+              {connected ? '+ 创建新导师' : '请先连接钱包'}
             </button>
           </div>
         </div>

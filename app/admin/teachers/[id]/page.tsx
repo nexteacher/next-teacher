@@ -48,9 +48,31 @@ export default function AdminTeacherDetailPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
 
   // 表单数据
   const [formData, setFormData] = useState<Partial<Teacher>>({});
+
+  // 根据名字生成颜色
+  const getColorFromName = (name: string) => {
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-teal-500',
+      'bg-orange-500',
+      'bg-cyan-500',
+    ];
+    const charCode = name.charCodeAt(0) || 0;
+    return colors[charCode % colors.length];
+  };
+
+  // 获取名字的首字
+  const getInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : '?';
+  };
 
   useEffect(() => {
     const fetchTeacherDetail = async () => {
@@ -98,6 +120,10 @@ export default function AdminTeacherDetailPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // 如果修改了头像URL，重置错误状态以便重新尝试加载
+    if (name === 'avatar') {
+      setAvatarError(false);
+    }
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,6 +217,7 @@ export default function AdminTeacherDetailPage() {
         setTeacher(data.data);
         setFormData(data.data);
         setIsEditing(false);
+        setAvatarError(false); // 重置头像错误状态
         setMessage({ type: 'success', text: '保存成功！' });
       } else {
         setMessage({ type: 'error', text: data.error || '保存失败' });
@@ -413,13 +440,26 @@ export default function AdminTeacherDetailPage() {
             <div className="bg-white border border-gray-200 p-8 sticky top-8">
               {/* 头像和基本信息 */}
               <div className="text-center mb-8">
-                <Image
-                  src={formData.avatar || "/images/default-avatar.png"}
-                  alt={formData.name || ""}
-                  width={120}
-                  height={120}
-                  className="w-[120px] h-[120px] aspect-square rounded-full object-cover border border-gray-200 mx-auto mb-6"
-                />
+                {formData.avatar && !avatarError ? (
+                  <Image
+                    src={formData.avatar}
+                    alt={formData.name || ""}
+                    width={120}
+                    height={120}
+                    className="w-[120px] h-[120px] aspect-square rounded-full object-cover border border-gray-200 mx-auto mb-6"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <div
+                    className={`w-[120px] h-[120px] rounded-full mx-auto mb-6 flex items-center justify-center ${getColorFromName(
+                      formData.name || ""
+                    )}`}
+                  >
+                    <span className="text-white text-4xl font-light">
+                      {getInitial(formData.name || "")}
+                    </span>
+                  </div>
+                )}
                 {isEditing ? (
                   <div className="space-y-3">
                     <input

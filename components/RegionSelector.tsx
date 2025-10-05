@@ -52,23 +52,20 @@ export default function RegionSelector() {
 
   // 避免 SSR 水合不匹配
   if (!mounted) {
-    return <div className="w-[140px] h-[32px] bg-gray-100 rounded animate-pulse" />;
+    return <div className="w-full sm:w-[140px] h-[40px] bg-gray-100 rounded animate-pulse" />;
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-600 hidden sm:inline">地区</span>
-      <select
-        value={current}
-        onChange={onChange}
-        className="h-8 px-2 border border-gray-200 rounded text-sm bg-white hover:border-gray-300 focus:outline-none focus:border-gray-400 transition-colors"
-        aria-label="选择地区"
-      >
-        {REGIONS.map(r => (
-          <option key={r.code} value={r.code}>{r.name}</option>
-        ))}
-      </select>
-    </div>
+    <select
+      value={current}
+      onChange={onChange}
+      className="w-full sm:w-auto h-10 px-3 border border-gray-300 rounded-md text-sm bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
+      aria-label="选择地区"
+    >
+      {REGIONS.map(r => (
+        <option key={r.code} value={r.code}>{r.name}</option>
+      ))}
+    </select>
   );
 }
 

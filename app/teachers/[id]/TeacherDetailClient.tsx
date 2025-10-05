@@ -43,6 +43,7 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
   const [submitting, setSubmitting] = useState(false);
   const [reacting, setReacting] = useState<{ [commentId: string]: 'like' | 'dislike' | null }>({});
   const contentLength = content.trim().length;
+  const [avatarError, setAvatarError] = useState(false);
 
   // 编辑相关状态
   const [isEditing, setIsEditing] = useState(false);
@@ -51,6 +52,27 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
   const [formData, setFormData] = useState<Partial<Teacher>>(initialTeacher);
 
   const ValueVoteBar = useMemo(() => dynamic(() => import('@/components/ValueVoteBar'), { ssr: false }), []);
+
+  // 根据名字生成颜色
+  const getColorFromName = (name: string) => {
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-teal-500',
+      'bg-orange-500',
+      'bg-cyan-500',
+    ];
+    const charCode = name.charCodeAt(0) || 0;
+    return colors[charCode % colors.length];
+  };
+
+  // 获取名字的首字
+  const getInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : '?';
+  };
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -149,6 +171,10 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // 如果修改了头像URL，重置错误状态以便重新尝试加载
+    if (name === 'avatar') {
+      setAvatarError(false);
+    }
   };
 
   const handleStringArrayChange = (index: number, value: string) => {
@@ -236,6 +262,7 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
         setTeacher(data.data);
         setFormData(data.data);
         setIsEditing(false);
+        setAvatarError(false); // 重置头像错误状态
         setEditMessage({ type: 'success', text: '保存成功！' });
       } else {
         setEditMessage({ type: 'error', text: data.error || '保存失败' });
@@ -355,13 +382,26 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
             <div className="bg-white border border-gray-200 p-6 md:p-8 lg:sticky lg:top-8">
               {/* 头像和基本信息 */}
               <div className="text-center mb-8">
-                <Image
-                  src={formData.avatar || "/images/default-avatar.png"}
-                  alt={formData.name || ""}
-                  width={120}
-                  height={120}
-                  className="w-[120px] h-[120px] aspect-square rounded-full object-cover border border-gray-200 mx-auto mb-6"
-                />
+                {formData.avatar && !avatarError ? (
+                  <Image
+                    src={formData.avatar}
+                    alt={formData.name || ""}
+                    width={120}
+                    height={120}
+                    className="w-[120px] h-[120px] aspect-square rounded-full object-cover border border-gray-200 mx-auto mb-6"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <div
+                    className={`w-[120px] h-[120px] rounded-full mx-auto mb-6 flex items-center justify-center ${getColorFromName(
+                      formData.name || ""
+                    )}`}
+                  >
+                    <span className="text-white text-4xl font-light">
+                      {getInitial(formData.name || "")}
+                    </span>
+                  </div>
+                )}
                 {isEditing ? (
                   <div className="space-y-3">
                     <input
