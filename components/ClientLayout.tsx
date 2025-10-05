@@ -39,7 +39,7 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
   return (
     <WalletContextProvider>
       {/* 滚动宣传 Banner - 仅桌面端显示 */}
-      <div className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-900 text-white overflow-hidden">
+      {/* <div className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-900 text-white overflow-hidden">
         <div className="animate-scroll-banner py-2 text-sm font-medium">
           <div className="flex">
             {
@@ -49,10 +49,10 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
             }
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* 全局导航栏 */}
-      <nav className="fixed top-0 md:top-[32px] left-0 right-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200 md:border-t-0">
+      <nav className="fixed top-0 md:top1-[32px] left-0 right-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200 md:border-t-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
           {/* 品牌 */}
           <Link href="/" className="flex items-center gap-2 group">
