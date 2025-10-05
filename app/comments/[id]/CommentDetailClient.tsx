@@ -116,7 +116,7 @@ export default function CommentDetailClient({ comment: initialComment, teacher }
     <div className="min-h-screen bg-white">
       {/* 返回按钮 */}
       <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
           <Link
             href={`/teachers/${teacher._id}`}
             className="inline-flex items-center text-gray-900 hover:text-black transition-colors text-sm"
@@ -127,7 +127,7 @@ export default function CommentDetailClient({ comment: initialComment, teacher }
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* 导师信息卡片 */}
         <div className="bg-white border border-gray-200 p-6 mb-8">
           <div className="flex items-center gap-4">

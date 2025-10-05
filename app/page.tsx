@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useTransition } from 'react';
 import Link from 'next/link';
 import { Teacher } from '@/types/teacher';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { generateSignatureMessage } from '@/lib/walletAuth';
 import RegionSelector from '@/components/RegionSelector';
+import { useRouter } from 'next/navigation';
 
 interface DepartmentInfo {
   name: string;
@@ -22,6 +23,8 @@ interface LoadedTeachers {
 }
 
 export default function Home() {
+  const router = useRouter();
+  const [isNavigating, startTransition] = useTransition();
   const { publicKey, connected, signMessage } = useWallet();
   const [structure, setStructure] = useState<UniversityStructure[]>([]);
   const [loadedTeachers, setLoadedTeachers] = useState<LoadedTeachers>({});
@@ -209,6 +212,18 @@ export default function Home() {
         return newSet;
       });
     }
+  };
+
+  const prefetchHref = (href: string) => {
+    try {
+      const existing = document.querySelector(`link[rel="prefetch"][href="${href}"]`);
+      if (existing) return;
+      const linkEl = document.createElement('link');
+      linkEl.rel = 'prefetch';
+      linkEl.href = href;
+      linkEl.as = 'document';
+      document.head.appendChild(linkEl);
+    } catch {}
   };
 
   const handleCreateTeacher = async () => {
@@ -420,6 +435,13 @@ export default function Home() {
                                   <Link
                                     key={teacher._id}
                                     href={`/teachers/${teacher._id}`}
+                                    prefetch
+                                    onMouseEnter={() => prefetchHref(`/teachers/${teacher._id}`)}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      const href = `/teachers/${teacher._id}`;
+                                      startTransition(() => router.push(href));
+                                    }}
                                     className="group"
                                   >
                                     <div className="flex items-baseline space-x-2 flex-wrap">
