@@ -47,11 +47,27 @@ export async function GET(request: NextRequest) {
       .select({ _id: 1, name: 1, title: 1, university: 1, department: 1, email: 1, homepage: 1, avatar: 1, researchAreas: 1, education: 1, experience: 1 })
       .lean();
 
-    // 计算每个导师的缺失字段数量并排序
-    const teachersWithMissingCount = allTeachers.map(teacher => ({
-      ...teacher,
-      missingFieldsCount: calculateMissingFieldsCount(teacher)
-    }));
+    // 计算每个导师的缺失字段数量、具体缺失的字段，并排序
+    const teachersWithMissingCount = allTeachers.map(teacher => {
+      const missingFieldsCount = calculateMissingFieldsCount(teacher);
+      const missingFields: string[] = [];
+      
+      // 记录具体缺失的字段
+      if (!teacher.title || (typeof teacher.title === 'string' && teacher.title.trim() === '')) missingFields.push('title');
+      if (!teacher.department || (typeof teacher.department === 'string' && teacher.department.trim() === '')) missingFields.push('department');
+      if (!teacher.email || (typeof teacher.email === 'string' && teacher.email.trim() === '')) missingFields.push('email');
+      if (!teacher.homepage || (typeof teacher.homepage === 'string' && teacher.homepage.trim() === '')) missingFields.push('homepage');
+      if (!teacher.avatar || (typeof teacher.avatar === 'string' && teacher.avatar.trim() === '')) missingFields.push('avatar');
+      if (!teacher.researchAreas || !Array.isArray(teacher.researchAreas) || teacher.researchAreas.length === 0) missingFields.push('researchAreas');
+      if (!teacher.education || !Array.isArray(teacher.education) || teacher.education.length === 0) missingFields.push('education');
+      if (!teacher.experience || !Array.isArray(teacher.experience) || teacher.experience.length === 0) missingFields.push('experience');
+      
+      return {
+        ...teacher,
+        missingFieldsCount,
+        missingFields
+      };
+    });
 
     // 按照缺失字段数量降序排序（缺失越多排在越前面）
     teachersWithMissingCount.sort((a, b) => b.missingFieldsCount - a.missingFieldsCount);
@@ -61,9 +77,8 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
     const items = teachersWithMissingCount.slice(skip, skip + limit);
 
-    // 移除临时添加的 missingFieldsCount 字段
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const finalItems = items.map(({ missingFieldsCount, ...teacher }) => teacher);
+    // 保留缺失字段信息返回给前端
+    const finalItems = items;
 
     return NextResponse.json({ 
       success: true, 
