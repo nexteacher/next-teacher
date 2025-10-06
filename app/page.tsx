@@ -371,7 +371,15 @@ export default function Home() {
           
           {/* 操作按钮组 - 移动端全宽布局，桌面端并排 */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:justify-between">
-            <RegionSelector />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <RegionSelector />
+              <Link
+                href="/teachers"
+                className="border border-gray-300 text-gray-900 rounded-md px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors whitespace-nowrap text-center w-full sm:w-auto"
+              >
+                🏆 榜单
+              </Link>
+            </div>
             <button
               className="bg-black text-white rounded-md px-4 py-2.5 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors whitespace-nowrap w-full sm:w-auto"
               disabled={!connected}

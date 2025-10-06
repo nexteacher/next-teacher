@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import connectDB from "@/lib/mongodb";
 import TeacherModel from "@/models/Teacher";
+import CommentModel from "@/models/Comment";
 import TeacherDetailClient from "./TeacherDetailClient";
 import { Teacher } from "@/types/teacher";
 import { serializeMongoObject } from "@/lib/serialize";
@@ -94,10 +95,33 @@ export default async function TeacherDetailPage({ params }: { params: Promise<{ 
       notFound();
     }
 
+    // 获取该导师的所有评论来计算平均评分
+    const comments = await CommentModel.find({ teacher: id }).lean();
+    
+    // 只统计未被折叠的评论（点赞数 >= 点踩数）
+    const validComments = comments.filter(comment => {
+      const likeCount = comment.likedBy?.length ?? 0;
+      const dislikeCount = comment.dislikedBy?.length ?? 0;
+      return likeCount >= dislikeCount;
+    });
+    
+    // 计算平均评分和评论数
+    let averageRating: number | null = null;
+    const commentCount = validComments.length;
+    
+    if (commentCount > 0) {
+      const totalRating = validComments.reduce((sum, comment) => sum + comment.rating, 0);
+      averageRating = totalRating / commentCount;
+    }
+
     // 将 MongoDB 对象转换为普通 JavaScript 对象
     const serializedTeacher = serializeMongoObject(teacher) as Teacher;
 
-    return <TeacherDetailClient teacher={serializedTeacher} />;
+    return <TeacherDetailClient 
+      teacher={serializedTeacher} 
+      averageRating={averageRating}
+      commentCount={commentCount}
+    />;
   } catch (error) {
     console.error('获取导师详情失败:', error);
     notFound();

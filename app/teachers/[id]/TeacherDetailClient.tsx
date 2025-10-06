@@ -29,9 +29,11 @@ const REGION_MAP: { [key: string]: string } = {
 
 interface TeacherDetailClientProps {
   teacher: Teacher;
+  averageRating: number | null;
+  commentCount: number;
 }
 
-export default function TeacherDetailClient({ teacher: initialTeacher }: TeacherDetailClientProps) {
+export default function TeacherDetailClient({ teacher: initialTeacher, averageRating, commentCount }: TeacherDetailClientProps) {
   const { publicKey, signMessage } = useWallet();
   const walletAddress = useMemo(() => publicKey?.toBase58() ?? "", [publicKey]);
 
@@ -381,6 +383,28 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
           {/* 左侧：导师基本信息 */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 p-6 md:p-8 lg:sticky lg:top-8">
+              {/* 评分显示 - 非编辑模式下显示 */}
+              {!isEditing && (
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  {averageRating !== null ? (
+                    <div className="text-center">
+                      <div className="text-3xl font-light text-black mb-1">
+                        {averageRating.toFixed(1)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        基于 {commentCount} 条评价
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-sm text-gray-400">
+                        暂无评分
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* 头像和基本信息 */}
               <div className="text-center mb-8">
                 {formData.avatar && !avatarError ? (
@@ -864,17 +888,19 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
                     // 如果是折叠的评论，只显示简略信息
                     if (isCollapsed) {
                       return (
-                        <div key={c._id} className="border border-gray-200 p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-500 font-mono">ID: {c._id.slice(-8)}</span>
-                            <span className="text-xs text-gray-400">评分 {c.rating}/5</span>
+                        <div key={c._id} className="border border-gray-200 p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <span className="text-xs text-gray-500 font-mono">ID: {c._id.slice(-8)}</span>
+                              <span className="text-xs text-gray-400">评分 {c.rating}/5</span>
+                            </div>
+                            <Link 
+                              href={`/comments/${c._id}`}
+                              className="text-sm text-gray-900 hover:text-black transition-colors font-medium whitespace-nowrap"
+                            >
+                              查看详情 →
+                            </Link>
                           </div>
-                          <Link 
-                            href={`/comments/${c._id}`}
-                            className="text-sm text-gray-900 hover:text-black transition-colors font-medium"
-                          >
-                            查看详情 →
-                          </Link>
                         </div>
                       );
                     }
@@ -952,24 +978,25 @@ export default function TeacherDetailClient({ teacher: initialTeacher }: Teacher
 
                     return (
                       <div key={c._id} className="border border-gray-200 p-4">
-                        <div className="flex items-center justify-between mb-2">
+                        {/* 移动端优化：垂直排列，桌面端横向排列 */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 min-h-[16px]">
                             {c.source !== 'imported' && (
                               <span className="text-xs text-gray-500 break-all">{c.walletAddress}</span>
                             )}
                             {c.source === 'imported' && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-700 border border-gray-200">
+                              <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-700 border border-gray-200 whitespace-nowrap">
                                 来自外部{c.importedFrom ? ` · ${c.importedFrom}` : ''}
                               </span>
                             )}
                           </div>
-                          <span className="text-xs text-gray-900">评分 {c.rating}/5</span>
+                          <span className="text-xs text-gray-900 whitespace-nowrap">评分 {c.rating}/5</span>
                         </div>
-                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{c.content}</p>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{c.content}</p>
                         <div className="text-[11px] text-gray-400 mt-2">
                           {new Date(c.createdAt).toLocaleString()}
                         </div>
-                        <div className="mt-3 flex items-center gap-3">
+                        <div className="mt-3 flex items-center gap-2 sm:gap-3 flex-wrap">
                           <button
                             onClick={() => react('like')}
                             className={`text-xs px-2 py-1 border inline-flex items-center gap-1.5 transition-colors ${userReaction === 'like' ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} ${reacting[c._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
