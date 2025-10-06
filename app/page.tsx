@@ -370,7 +370,7 @@ export default function Home() {
           </div>
           
           {/* 操作按钮组 - 移动端全宽布局，桌面端并排 */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:justify-between">
             <RegionSelector />
             <button
               className="bg-black text-white rounded-md px-4 py-2.5 text-sm disabled:opacity-50 hover:bg-gray-800 transition-colors whitespace-nowrap w-full sm:w-auto"
@@ -631,7 +631,6 @@ export default function Home() {
       {structure.length > 0 && (
         <nav className="fixed right-6 top-24 z-40 hidden lg:block">
           <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-lg shadow-sm p-3 max-h-[70vh] overflow-auto w-56">
-            <div className="text-xs text-gray-400 px-2 pb-2">快速导航</div>
             <ul className="space-y-1">
               {[...structure]
                 .sort((a, b) => compareChineseFirst(a.university, b.university))
