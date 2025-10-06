@@ -7,6 +7,10 @@ import TeacherDetailClient from "./TeacherDetailClient";
 import { Teacher } from "@/types/teacher";
 import { serializeMongoObject } from "@/lib/serialize";
 
+// 禁用静态生成，每次请求都重新获取数据
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // 生成动态元数据
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   try {
@@ -63,24 +67,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: "导师详情 - NexTeacher",
       description: "查看导师详细信息和学生评价"
     };
-  }
-}
-
-// 生成静态参数（用于 SSG）
-export async function generateStaticParams() {
-  try {
-    await connectDB();
-    const teachers = await TeacherModel.find(
-      { isActive: true },
-      { _id: 1 }
-    ).lean();
-    
-    return teachers.map(teacher => ({
-      id: String(teacher._id)
-    }));
-  } catch (error) {
-    console.error('生成静态参数失败:', error);
-    return [];
   }
 }
 
